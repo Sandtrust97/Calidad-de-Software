@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calidad y Arquitectura de Software</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --card-border: #30363d;
+            --text-main: #c9d1d9;
+            --text-secondary: #8b949e;
+            
+            --syntax-cyan: #58a6ff;
+            --syntax-purple: #d2a8ff;
+            --syntax-green: #3fb950;
+            --syntax-orange: #ffa657;
+            --syntax-pink: #ff7b72;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 70px;
+            background-color: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem;
+            z-index: 100;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--syntax-cyan);
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.5);
+        }
+
+        section {
+            min-height: 100vh;
+            padding: 120px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 6vw, 5.5rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .gradient-text-1 {
+            background: linear-gradient(90deg, var(--syntax-cyan), var(--syntax-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gradient-text-2 {
+            background: linear-gradient(90deg, var(--syntax-green), var(--syntax-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: clamp(2.5rem, 4vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 2rem;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            font-size: clamp(1.1rem, 2vw, 1.4rem);
+            color: var(--text-secondary);
+            font-weight: 400;
+            max-width: 800px;
+            margin: 0 auto 4rem auto;
+            line-height: 1.6;
+        }
+
+        /* Flexbox centrado */
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            flex: 1 1 320px;
+            max-width: 380px; 
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: transparent;
+            transition: background 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--syntax-cyan);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(88, 166, 255, 0.1);
+        }
+
+        .card:hover::before, .card.expanded::before {
+            background: linear-gradient(90deg, var(--syntax-cyan), var(--syntax-purple));
+        }
+
+        /* Mantener el borde y brillo cuando la tarjeta está expandida */
+        .card.expanded {
+            border-color: var(--syntax-cyan);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(88, 166, 255, 0.05);
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+            transition: margin-bottom 0.4s ease;
+        }
+
+        .card h3::before {
+            content: '</>';
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: var(--syntax-cyan);
+            background: rgba(88, 166, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .card-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.6s ease, opacity 0.4s ease, margin-top 0.4s ease;
+        }
+
+        .card.expanded .card-content {
+            max-height: 500px; 
+            opacity: 1;
+            margin-top: 1.5rem;
+        }
+
+        .card.expanded h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .card p, .card li {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        .card strong {
+            color: var(--syntax-cyan);
+            font-weight: 600;
+        }
+
+        .card ul {
+            padding-left: 1.5rem;
+            list-style-type: square;
+        }
+
+        .card li::marker {
+            color: var(--syntax-purple);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .code-tag {
+            background: rgba(210, 168, 255, 0.1);
+            color: var(--syntax-purple);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+        
+        .code-alert {
+            background: rgba(255, 123, 114, 0.1);
+            color: var(--syntax-pink);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#hero">ISO 25010</a>
+        <a href="#fpa">Puntos de Función</a>
+        <a href="#codigo">Métricas de Código</a>
+        <a href="#diseno">Métricas de Diseño</a>
+    </nav>
+
+    <!-- TEMA 1: ISO 25010 -->
+    <section id="hero">
+        <div class="container reveal">
+            <h1>Arquitectura & <br><span class="gradient-text-1">Calidad de Software</span></h1>
+            <p class="subtitle">Explora el estándar ISO/IEC 25010. Haz clic en cada módulo para desplegar la información y descubrir las propiedades del modelo de calidad.</p>
+            
+            <div class="grid" style="margin-top: 60px;">
+                <div class="card" onclick="toggleAccordion(this)">
+                    <h3>Adecuación & Eficiencia</h3>
+                    <div class="card-content">
+                        <p><strong>Adecuación Funcional:</strong> Satisface las necesidades del usuario mediante completitud, corrección y pertinencia en las tareas.</p>
+                        <p><strong>Eficiencia:</strong> Desempeño estructurado considerando los tiempos de respuesta y la utilización de recursos del sistema bajo estrés.</p>
+                    </div>
+                </div>
+                <div class="card" onclick="toggleAccordion(this)">
+                    <h3>Compatibilidad & Usabilidad</h3>
+                    <div class="card-content">
+                        <p><strong>Compatibilidad:</strong> Interoperabilidad y coexistencia fluida dentro de ecosistemas compartidos de hardware y software.</p>
+                        <p><strong>Usabilidad:</strong> Interfaces construidas para ser entendidas, atractivas y capaces de proteger al usuario final contra flujos de error.</p>
+                    </div>
+                </div>
+                <div class="card" onclick="toggleAccordion(this)">
+                    <h3>Fiabilidad & Seguridad</h3>
+                    <div class="card-content">
+                        <p><strong>Fiabilidad:</strong> Alta disponibilidad, madurez del código y tolerancia para recuperar el estado deseado ante fallos imprevistos.</p>
+                        <p><strong>Seguridad:</strong> Garantía de confidencialidad, integridad estructural, trazabilidad de acciones y autenticidad del acceso.</p>
+                    </div>
+                </div>
+                <div class="card" onclick="toggleAccordion(this)">
+                    <h3>Mantenibilidad & Portabilidad</h3>
+                    <div class="card-content">
+                        <p><strong>Mantenibilidad:</strong> Código modular, altamente reusable y diseñado para ser modificado o analizado sin introducir nuevos defectos.</p>
+                        <p><strong>Portabilidad:</strong> Adaptabilidad y facilidad operativa para trasladar o instalar el sistema a través de múltiples entornos objetivos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TEMA 2: Puntos de Función -->
+    <section id="fpa">
+        <div class="container reveal">
+            <h2>Estimación por <br><span class="gradient-text-2">Puntos de Función</span></h2>
+            <p class="subtitle">Trasciende el conteo de líneas. Haz clic en las tarjetas para ver cómo el método FPA evalúa la complejidad real del sistema.</p>
+            
+            <div class="grid">
+                <div class="card reveal" style="border-top-color: var(--syntax-green);" onclick="toggleAccordion(this)">
+                    <h3 style="color: var(--syntax-green);">Funciones de Datos</h3>
+                    <div class="card-content">
+                        <ul>
+                            <li><span style="color: var(--syntax-green);">ILF (Archivos Internos):</span> Entidades lógicas de información que el sistema mantiene y actualiza internamente.</li>
+                            <li><span style="color: var(--syntax-green);">EIF (Archivos Externos):</span> Datos cruciales referenciados para consulta, pero gestionados por APIs o sistemas externos.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card reveal" style="border-top-color: var(--syntax-orange);" onclick="toggleAccordion(this)">
+                    <h3 style="color: var(--syntax-orange);">Funciones Transaccionales</h3>
+                    <div class="card-content">
+                        <ul>
+                            <li><span style="color: var(--syntax-orange);">Entradas (EI):</span> Procesos que ingresan al sistema para actualizar bases de datos internas.</li>
+                            <li><span style="color: var(--syntax-orange);">Salidas (EO):</span> Datos expuestos hacia el exterior tras aplicar cálculos o lógica de negocio profunda.</li>
+                            <li><span style="color: var(--syntax-orange);">Consultas (EQ):</span> Recuperación directa de información sin alteraciones en la persistencia de datos.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TEMA 3: Métricas de Código -->
+    <section id="codigo">
+        <div class="container reveal">
+            <h2>Métricas <br><span class="gradient-text-1">Estáticas de Código</span></h2>
+            <p class="subtitle">Análisis del código fuente para identificar cuellos de botella lógicos. Expande las métricas para conocer los detalles.</p>
+
+            <div class="grid">
+                <div class="card reveal" onclick="toggleAccordion(this)">
+                    <h3>Complejidad Ciclomática</h3>
+                    <div class="card-content">
+                        <p>Evalúa el número de caminos independientes en el flujo de control. Matemáticamente equivale a <span class="code-tag">condicionales + 1</span>.</p>
+                        <p><span class="code-alert">Alerta de Riesgo:</span> Un valor superior a 50 revela código espagueti extremadamente difícil de mantener y probar mediante testing unitario.</p>
+                    </div>
+                </div>
+                <div class="card reveal" onclick="toggleAccordion(this)">
+                    <h3>Densidad y Mantenibilidad</h3>
+                    <div class="card-content">
+                        <p><strong>Regla SLOC:</strong> Un bloque funcional no debería superar las 20-30 líneas ejecutables para respetar la responsabilidad única.</p>
+                        <p><strong>Índice Combinado:</strong> Escala automatizada (0-100) que integra volumen, ramas lógicas y densidad de comentarios limpios.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TEMA 4: Métricas de Diseño -->
+    <section id="diseno">
+        <div class="container reveal">
+            <h2>Diseño Estructural y <br><span class="gradient-text-2">Arquitectura OOP</span></h2>
+            <p class="subtitle">Evaluación de las interacciones entre clases. Haz clic para ver cómo asegurar escalabilidad y modularidad.</p>
+
+            <div class="grid">
+                <div class="card reveal" onclick="toggleAccordion(this)">
+                    <h3>Acoplamiento (CBO)</h3>
+                    <div class="card-content">
+                        <p>Cuantifica las dependencias directas entre componentes. Un valor <span class="code-tag">CBO ≤ 5</span> es ideal para asegurar independencia.</p>
+                        <p>Un acoplamiento alto genera un efecto dominó, donde un cambio mínimo rompe múltiples módulos del sistema.</p>
+                    </div>
+                </div>
+                <div class="card reveal" onclick="toggleAccordion(this)">
+                    <h3>Cohesión (LCOM)</h3>
+                    <div class="card-content">
+                        <p>Mide la correlación entre métodos y atributos internos. Una cohesión baja (valores altos) indica la presencia de un "Objeto Dios".</p>
+                        <p>El código de calidad requiere fragmentar estas clases monolíticas para restaurar el Principio de Responsabilidad Única.</p>
+                    </div>
+                </div>
+                <div class="card reveal" onclick="toggleAccordion(this)">
+                    <h3>Jerarquía (DIT & RFC)</h3>
+                    <div class="card-content">
+                        <p><strong>Profundidad DIT:</strong> Se recomienda mantener árboles de herencia cortos (<span class="code-tag">≤ 3</span>) favoreciendo la composición sobre la herencia.</p>
+                        <p><strong>Respuesta RFC:</strong> Una cantidad abrumadora de métodos ejecutables en cadena dispara los costos de testing e integración continua.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Función para controlar el comportamiento exclusivo de las tarjetas
+        function toggleAccordion(selectedCard) {
+            // Ubicar el contenedor general de la tarjeta cliqueada
+            const gridContainer = selectedCard.closest('.grid');
+            // Obtener todas las tarjetas de ese contenedor
+            const allCards = gridContainer.querySelectorAll('.card');
+
+            // Verificar si la tarjeta cliqueada ya está abierta
+            const isAlreadyExpanded = selectedCard.classList.contains('expanded');
+
+            // Cerrar absolutamente todas las tarjetas en la sección actual
+            allCards.forEach(card => card.classList.remove('expanded'));
+
+            // Si no estaba abierta, la abrimos (si ya estaba abierta, se queda cerrada por el paso anterior)
+            if (!isAlreadyExpanded) {
+                selectedCard.classList.add('expanded');
+            }
+        }
+
+        // Animación de aparición al hacer scroll
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 100;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+
+        window.addEventListener("scroll", reveal);
+        reveal();
+        
+        // Desplazamiento suave para la barra de navegación
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
